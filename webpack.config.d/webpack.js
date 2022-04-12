@@ -1,5 +1,11 @@
 if (config.entry.main[0].endsWith("frontend.js")) {
     config.resolve.modules.push("../../processedResources/frontend/main");
+} else {
+    config.resolve.fallback = {
+        "fs": false,
+        "path": false,
+        "crypto": false
+    };
 }
 
 if (config.devServer) {

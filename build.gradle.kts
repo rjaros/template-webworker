@@ -73,6 +73,9 @@ kotlin {
         }
         val workerMain by getting {
             dependencies {
+                implementation(npm("process", "0.11.10"))
+                implementation(npm("absurd-sql", "0.0.53"))
+                implementation(npm("@jlongster/sql.js", "1.6.1"))
                 implementation("io.kvision:kvision:$kvisionVersion")
             }
         }
@@ -91,6 +94,10 @@ tasks {
         inputs.dir("src/workerMain/kotlin")
         outputs.files("$buildDir/processedResources/frontend/main/worker.js")
         doLast {
+            copy {
+                from("$buildDir/js/node_modules/@jlongster/sql.js/dist/sql-wasm.wasm")
+                into("$buildDir/processedResources/frontend/main/")
+            }
             exec {
                 executable = getNodeJsBinaryExecutable(rootProject)
                 workingDir = file("${rootProject.buildDir}/js/packages/${rootProject.name}-worker")
