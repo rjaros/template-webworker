@@ -88,34 +88,15 @@ kotlin {
     }
 }
 
-tasks {
-    register("workerDist") {
-        dependsOn("workerBrowserProductionWebpack")
-        inputs.dir("src/workerMain/kotlin")
-        outputs.files("$buildDir/processedResources/frontend/main/worker.js")
-        doLast {
-            copy {
-                from("$buildDir/js/node_modules/@jlongster/sql.js/dist/sql-wasm.wasm")
-                into("$buildDir/processedResources/frontend/main/")
-            }
-            exec {
-                executable = getNodeJsBinaryExecutable(rootProject)
-                workingDir = file("${rootProject.buildDir}/js/packages/${rootProject.name}-worker")
-                args(
-                    "${rootProject.buildDir}/js/node_modules/webpack/bin/webpack.js",
-                    "--config",
-                    "${rootProject.buildDir}/js/packages/${rootProject.name}-worker/webpack.config.js"
-                )
+afterEvaluate {
+    tasks {
+        getByName("workerBundle") {
+            doLast {
+                copy {
+                    from("$buildDir/js/node_modules/@jlongster/sql.js/dist/sql-wasm.wasm")
+                    into("$buildDir/processedResources/frontend/main/")
+                }
             }
         }
     }
-}
-
-fun getNodeJsBinaryExecutable(rootProject: Project): String {
-    val nodeDir = org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject).nodeJsSetupTaskProvider.get().destination
-    val isWindows = System.getProperty("os.name").toLowerCase().contains("windows")
-    val nodeBinDir = if (isWindows) nodeDir else nodeDir.resolve("bin")
-    val command = org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(rootProject).nodeCommand
-    val finalCommand = if (isWindows && command == "node") "node.exe" else command
-    return nodeBinDir.resolve(finalCommand).absolutePath
 }
